@@ -1,3 +1,5 @@
+** https://dannybird19-eng.github.io/wow-forever-class-finder/?utm_source=chatgpt.com ** < HTML link to the quiz.
+
 WoW Forever Class Finder
 
 Welcome to the WoW Forever Class Finder! 🎮
