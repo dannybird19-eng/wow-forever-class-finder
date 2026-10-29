@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WoW Forever — Class Finder</title>
+<style>
+:root{--bg:#0b0d12;--panel:#151923;--panel2:#1c2230;--gold:#d6b46b;--text:#f2f0e9;--muted:#a9afbd;--line:#303849;--accent:#8e6bca}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#22243a 0,#0b0d12 55%);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:28px 18px 60px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.75rem;color:var(--gold);font-weight:800}
+h1{font-size:clamp(2.2rem,6vw,4rem);line-height:1.02;margin:.45rem 0 1rem;letter-spacing:-.04em}h2{margin:.2rem 0 .5rem;font-size:1.55rem}p{color:var(--muted)}.intro{max-width:680px;font-size:1.08rem}
+.panel{background:linear-gradient(145deg,rgba(27,33,47,.97),rgba(17,21,30,.98));border:1px solid var(--line);border-radius:18px;padding:clamp(18px,4vw,30px);box-shadow:0 18px 60px #0005}
+.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--muted);font-size:.9rem;margin-bottom:12px}.progress{height:6px;background:#303747;border-radius:10px;overflow:hidden;margin-bottom:26px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width .2s}
+.question{font-size:1.3rem;font-weight:750;margin:0 0 18px}.answers{display:grid;gap:10px}.answer{display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;padding:15px 16px;border-radius:12px;border:1px solid #394255;background:#171d29;color:var(--text);font:inherit;cursor:pointer;transition:.15s}.answer:hover{border-color:var(--gold);background:#222838}.answer.selected{border-color:var(--gold);background:#302a22;box-shadow:inset 0 0 0 1px #d6b46b55}.letter{flex:0 0 27px;height:27px;border-radius:8px;display:grid;place-items:center;background:#2b3243;color:var(--gold);font-size:.82rem;font-weight:800}.answer.selected .letter{background:var(--gold);color:#171717}.actions{display:flex;justify-content:space-between;gap:12px;margin-top:24px}.btn{border:1px solid var(--line);border-radius:10px;padding:11px 18px;font:inherit;font-weight:750;cursor:pointer}.btn.primary{background:var(--gold);border-color:var(--gold);color:#151515}.btn.secondary{background:#202636;color:var(--text)}.btn:disabled{opacity:.35;cursor:not-allowed}.note{font-size:.85rem;margin-top:18px}.hidden{display:none!important}.result-top{display:flex;align-items:center;gap:16px;margin-bottom:20px}.crest{width:66px;height:66px;flex:0 0 66px;display:grid;place-items:center;border-radius:16px;background:#29283a;border:1px solid #57506e;font-size:2rem}.class-name{font-size:2.3rem;line-height:1.1;margin:0}.tag{display:inline-block;color:var(--gold);border:1px solid #6a5938;border-radius:999px;padding:4px 10px;font-size:.78rem;margin:4px 5px 0 0}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:20px}.mini{background:#121722;border:1px solid var(--line);border-radius:12px;padding:16px}.mini h3{margin:0 0 7px;font-size:1rem;color:var(--gold)}.mini p{margin:0;font-size:.94rem}.runner{padding:13px 0;border-bottom:1px solid var(--line)}.runner:last-child{border:0}.runner-head{display:flex;justify-content:space-between;gap:12px;font-weight:700}.meter{height:5px;background:#303747;border-radius:8px;margin-top:8px;overflow:hidden}.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold))}.small{font-size:.88rem}.footer{color:#777f91;text-align:center;font-size:.8rem;margin-top:26px}
+</style>
+</head>
+<body><main class="wrap">
+<div class="eyebrow">Azeroth awaits</div>
+<h1>WoW Forever<br><span style="color:var(--gold)">Class Finder</span></h1>
+<p class="intro">A longer, playstyle-first class assessment for WoW Forever. Answer based on how you actually like to play — not which class you think you should choose. Your result is calculated from your choices, with no “which class suits you?” question at the end.</p>
+<section id="quiz" class="panel" aria-live="polite">
+<div class="topline"><span id="stepLabel">Question 1 of 15</span><span id="sectionLabel">Combat style</span></div>
+<div class="progress"><div id="progressBar" class="bar"></div></div>
+<h2 id="question" class="question"></h2><div id="answers" class="answers"></div>
+<div class="actions"><button id="back" class="btn secondary" type="button">Back</button><button id="next" class="btn primary" type="button" disabled>Next</button></div>
+<p class="note">There are no right or wrong answers. Pick the closest match; every answer contributes to the result.</p>
+</section>
+<section id="results" class="panel hidden" aria-live="polite">
+<div class="eyebrow">Your class profile</div><div id="mainResult"></div>
+<div class="result-grid" id="details"></div>
+<h2 style="margin-top:28px">Other strong matches</h2><p class="small">These classes scored closest to your overall answers.</p><div id="runners"></div>
+<div class="actions"><button id="restart" class="btn secondary" type="button">Retake quiz</button><button id="copy" class="btn primary" type="button">Copy results</button></div>
+</section>
+<div class="footer">Fan-made class finder • For fun and discussion, not an official WoW Forever tool</div>
+</main>
+<script>
+const classes = {
+Warrior:{icon:"⚔️",role:"Melee damage / tank",tags:["Direct combat","Weapons","Durability"],summary:"You want to get stuck in, master your weapons and win through pressure, timing and toughness.",strengths:"Strong melee presence, flexible weapon choices and the option to tank.",tradeoff:"You rely on gear, positioning and resources; there is no spellbook to solve every problem.",pve:"A classic front-line pick for dungeons, tanking or melee damage.",pvp:"Great for relentless pressure and punishing enemies when you can stay on them."},
+Paladin:{icon:"🛡️",role:"Support / healer / melee",tags:["Protection","Utility","Staying power"],summary:"You like being hard to kill and bringing useful tools that help a group survive.",strengths:"Healing, blessings, defensive tools and a sturdy feel.",tradeoff:"Often slower-paced and less mobile than some other classes.",pve:"A dependable support option with healing and defensive utility.",pvp:"Excellent at surviving, supporting teammates and turning fights with utility."},
+Hunter:{icon:"🏹",role:"Ranged damage / pet",tags:["Range","Pets","Solo play"],summary:"You prefer controlling the distance, using a pet and having tools to handle situations on your own.",strengths:"Ranged pressure, tracking, traps and a pet to help absorb danger.",tradeoff:"Pet management and positioning matter; enemies who close the gap can be awkward.",pve:"Comfortable solo levelling and consistent ranged damage.",pvp:"Strong at controlling space, kiting and combining traps with pet pressure."},
+Rogue:{icon:"🗡️",role:"Melee damage / stealth",tags:["Stealth","Control","Burst"],summary:"You enjoy choosing when a fight starts, controlling the target and striking at the right moment.",strengths:"Stealth, interrupts, crowd control and dangerous burst windows.",tradeoff:"Mistimed engages or poor energy management can leave you exposed.",pve:"A tactical melee damage dealer with useful control tools.",pvp:"A natural fit for ambushes, pick-offs, resets and outplaying opponents."},
+Priest:{icon:"✨",role:"Healer / ranged damage",tags:["Healing","Shields","Mind games"],summary:"You like keeping allies alive, managing pressure and having a darker offensive side available.",strengths:"Powerful healing identity, defensive spells and shadow damage options.",tradeoff:"Positioning and mana management are important, and getting focused can be rough.",pve:"A core healing option with a distinct damage path too.",pvp:"Can protect teammates, sustain fights and pressure enemies through Shadow."},
+Shaman:{icon:"⚡",role:"Support / healer / damage",tags:["Totems","Adaptability","Elemental power"],summary:"You like adapting to the fight and adding a toolbox of spells, totems and support.",strengths:"Versatile healing and damage, totem utility and strong group contribution.",tradeoff:"You have more buttons and situational tools to manage than a simpler class.",pve:"Useful in groups with healing, buffs and multiple damage styles.",pvp:"Flexible utility and burst potential reward awareness and smart totem use."},
+Mage:{icon:"❄️",role:"Ranged damage / control",tags:["Spellcasting","Crowd control","Burst"],summary:"You want to control a fight from range with powerful spells, slows and well-timed burst.",strengths:"Strong ranged damage, control, escape tools and useful quality-of-life spells.",tradeoff:"You are relatively fragile and need to protect your space.",pve:"A strong ranged damage choice with control and utility.",pvp:"Excels at kiting, setting up burst and controlling enemy movement."},
+Warlock:{icon:"🔥",role:"Ranged damage / pet",tags:["Damage over time","Pets","Attrition"],summary:"You like wearing opponents down, using demons and winning through pressure that keeps ticking.",strengths:"Damage over time, pet options, curses and tools for drawn-out fights.",tradeoff:"Managing pets, casts and multiple effects takes attention.",pve:"A sustained damage class with pets and useful group tools.",pvp:"Strong at draining opponents and making it difficult for them to recover."},
+Druid:{icon:"🌿",role:"Hybrid / shapeshifter",tags:["Versatility","Mobility","Forms"],summary:"You want options: change forms, fill different roles and adapt rather than be locked into one style.",strengths:"Role flexibility, shapeshifting and strong mobility in the right situations.",tradeoff:"Its breadth can mean more to learn, and some roles depend heavily on build and gear.",pve:"Can offer tanking, healing or damage depending on spec and situation.",pvp:"Forms and mobility offer creative escapes, pressure and role flexibility."}
+};
+const qs = [
+{section:"Combat style",q:"When a fight starts, what sounds most satisfying?",a:[
+["Getting right into melee and trading blows",{Warrior:3,Rogue:1,Paladin:1}],
+["Opening from stealth and controlling the first few seconds",{Rogue:4}],
+["Keeping distance and landing spells or shots",{Mage:2,Hunter:2,Warlock:2,Priest:1}],
+["Adapting on the fly with healing, damage or support",{Druid:2,Shaman:3,Paladin:1,Priest:1}]]},
+{section:"Combat style",q:"Which kind of victory feels best?",a:[
+["Winning a long fight through toughness and pressure",{Warrior:2,Paladin:2,Warlock:2}],
+["A clean burst window that catches someone off guard",{Rogue:3,Mage:2,Warrior:1}],
+["Outplaying someone with slows, traps or crowd control",{Mage:3,Hunter:2,Rogue:2}],
+["Keeping the team alive until the fight swings our way",{Priest:3,Shaman:2,Paladin:2,Druid:2}]]},
+{section:"Role",q:"Which responsibility would you most enjoy in a dungeon group?",a:[
+["Being the one enemies focus while I keep them controlled",{Warrior:3,Paladin:2,Druid:2}],
+["Keeping health bars stable and rescuing people",{Priest:3,Shaman:3,Paladin:2,Druid:2}],
+["Making the damage numbers happen from range",{Mage:2,Hunter:2,Warlock:3,Priest:1}],
+["Bringing flexible damage and useful tricks",{Rogue:2,Shaman:2,Druid:3,Hunter:1}]]},
+{section:"Role",q:"How do you feel about healing other players?",a:[
+["Love it — I enjoy being responsible for keeping people up",{Priest:3,Shaman:3,Paladin:2,Druid:3}],
+["Happy to have it as an option, but not my main thing",{Paladin:2,Shaman:2,Druid:2}],
+["I'd rather focus on damage or control",{Rogue:2,Mage:2,Hunter:2,Warlock:2,Warrior:2}],
+["I like being durable and protecting the group directly",{Warrior:2,Paladin:3,Druid:2}]]},
+{section:"Solo play",q:"For levelling alone, what would you value most?",a:[
+["A pet or companion to help handle enemies",{Hunter:4,Warlock:3}],
+["Stealth, escape routes and choosing my fights",{Rogue:4,Druid:1}],
+["Reliable spells and ways to control groups of enemies",{Mage:3,Warlock:2,Priest:1}],
+["Durability, self-healing or a broad toolkit",{Paladin:2,Shaman:2,Druid:3,Warrior:1}]]},
+{section:"Solo play",q:"You accidentally pull too many enemies. Your instinct is…",a:[
+["Use control or movement to create space",{Mage:3,Hunter:2,Rogue:2,Druid:2}],
+["Let my pet take pressure while I deal with the situation",{Hunter:3,Warlock:3}],
+["Stand my ground and survive the mess",{Warrior:2,Paladin:3,Shaman:1}],
+["Heal, change form or use whatever tool fits",{Druid:3,Shaman:2,Priest:2,Paladin:1}]]},
+{section:"PvP",q:"What PvP role appeals to you most?",a:[
+["Sneaking around and picking the right target",{Rogue:4}],
+["Kiting, slowing and controlling the battlefield",{Mage:3,Hunter:3}],
+["Supporting allies and turning fights with utility",{Priest:2,Shaman:3,Paladin:3,Druid:2}],
+["Staying on a target and forcing them to respond",{Warrior:3,Warlock:2,Paladin:1}]]},
+{section:"PvP",q:"Which weakness would you be most willing to work around?",a:[
+["Being fragile if I get caught out",{Mage:2,Rogue:2}],
+["Needing to manage pets or damage-over-time effects",{Hunter:2,Warlock:3}],
+["Being less mobile but difficult to remove",{Paladin:2,Warrior:2}],
+["Having a lot of situational abilities to learn",{Druid:3,Shaman:3,Priest:2}]]},
+{section:"Complexity",q:"What kind of learning curve do you prefer?",a:[
+["Straightforward fundamentals with room to master them",{Warrior:3,Hunter:2}],
+["A focused toolkit where timing and precision matter",{Rogue:3,Mage:2}],
+["Lots of buttons, utility and different answers to problems",{Shaman:3,Druid:3,Paladin:2}],
+["Managing several things at once for a satisfying payoff",{Warlock:3,Priest:2}]]},
+{section:"Complexity",q:"How do you feel about managing a pet?",a:[
+["I actively want one as part of my class identity",{Hunter:4,Warlock:3}],
+["Fine with one, but I don't want it to be the whole focus",{Warlock:1,Hunter:1}],
+["I'd rather focus on my character's own abilities",{Warrior:1,Rogue:2,Mage:2,Priest:2,Shaman:2,Paladin:2,Druid:2}],
+["I like a mix of summons, forms or other extra systems",{Warlock:2,Druid:3,Shaman:1}]]},
+{section:"Group play",q:"What makes you feel useful to a group?",a:[
+["Big damage and helping finish priority targets",{Mage:2,Rogue:2,Warrior:2,Hunter:2,Warlock:2}],
+["Healing, buffs, totems or defensive support",{Priest:3,Shaman:3,Paladin:3,Druid:2}],
+["Tanking and controlling enemies so others can do their jobs",{Warrior:3,Paladin:2,Druid:2}],
+["Bringing control, interrupts and unusual utility",{Rogue:2,Mage:2,Hunter:2,Shaman:2,Druid:2}]]},
+{section:"Fantasy",q:"Which class fantasy sounds most appealing?",a:[
+["A weapon master who wins through grit and skill",{Warrior:3,Rogue:1}],
+["A holy champion protecting allies",{Paladin:4}],
+["A hunter of beasts and enemies with a loyal pet",{Hunter:4}],
+["A shadowy tactician, arcane scholar or dark summoner",{Rogue:1,Mage:2,Warlock:3,Priest:1}]]},
+{section:"Fantasy",q:"Which visual style do you gravitate towards?",a:[
+["Steel, shields, blades and heavy armour",{Warrior:3,Paladin:2}],
+["Nature, animal forms, lightning or elemental magic",{Druid:3,Shaman:3}],
+["Arcane energy, frost, fire or shadow spells",{Mage:2,Warlock:2,Priest:2}],
+["Bows, traps, stealth and practical tools",{Hunter:3,Rogue:2}]]},
+{section:"Long-term feel",q:"Over many weeks of playing, what keeps a class fun for you?",a:[
+["Improving at duels, matchups and outplays",{Rogue:3,Mage:2,Hunter:2}],
+["Being dependable and wanted in groups",{Priest:2,Shaman:3,Paladin:3,Druid:2}],
+["Having different builds or roles to experiment with",{Druid:4,Shaman:2,Paladin:1}],
+["Refining a damage rotation and getting stronger gear",{Warrior:2,Mage:2,Warlock:2,Hunter:2}]]},
+{section:"Long-term feel",q:"If you could be known for one thing in your guild, what would it be?",a:[
+["The clutch player who turns a fight around",{Priest:2,Shaman:3,Paladin:2,Druid:2}],
+["The dangerous duelist nobody wants to meet alone",{Rogue:3,Mage:2,Warrior:2}],
+["The dependable front line who gets the job done",{Warrior:3,Paladin:2}],
+["The adaptable player who always has another tool",{Druid:3,Hunter:1,Shaman:2,Warlock:1}]]}
+];
+let index=0, answers=Array(qs.length).fill(null);
+const $=id=>document.getElementById(id);
+function render(){
+ const q=qs[index];$("stepLabel").textContent=`Question ${index+1} of ${qs.length}`;$("sectionLabel").textContent=q.section;
+ $("progressBar").style.width=`${index/qs.length*100}%`;$("question").textContent=q.q;$("answers").innerHTML="";
+ q.a.forEach((item,i)=>{const b=document.createElement("button");b.type="button";b.className="answer"+(answers[index]===i?" selected":"");b.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span><span>${item[0]}</span>`;b.onclick=()=>{answers[index]=i;renderAnswers();$("next").disabled=false;};$("answers").appendChild(b)});
+ $("back").disabled=index===0;$("next").textContent=index===qs.length-1?"Show my results":"Next";$("next").disabled=answers[index]===null;
+}
+function renderAnswers(){[...$("answers").children].forEach((b,i)=>{b.classList.toggle("selected",answers[index]===i)});}
+$("back").onclick=()=>{if(index>0){index--;render()}};
+$("next").onclick=()=>{if(answers[index]===null)return;if(index<qs.length-1){index++;render()}else showResults()};
+function showResults(){
+ const scores=Object.fromEntries(Object.keys(classes).map(k=>[k,0]));
+ answers.forEach((a,i)=>{const weights=qs[i].a[a][1];Object.entries(weights).forEach(([k,v])=>scores[k]+=v)});
+ const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);const [winner,score]=sorted[0], c=classes[winner];
+ $("quiz").classList.add("hidden");$("results").classList.remove("hidden");$("progressBar").style.width="100%";
+ $("mainResult").innerHTML=`<div class="result-top"><div class="crest">${c.icon}</div><div><h2 class="class-name">${winner}</h2><div class="small">${c.role}</div>${c.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div></div><p style="font-size:1.08rem;color:var(--text)">${c.summary}</p>`;
+ $("details").innerHTML=[["Why it scored well",c.strengths],["Things to consider",c.tradeoff],["In PvE",c.pve],["In PvP",c.pvp]].map(x=>`<div class="mini"><h3>${x[0]}</h3><p>${x[1]}</p></div>`).join("");
+ $("runners").innerHTML=sorted.slice(1,4).map(([name,n])=>`<div class="runner"><div class="runner-head"><span>${classes[name].icon} ${name}</span><span>${Math.round(n/Math.max(score,1)*100)}% relative score</span></div><div class="meter"><span style="width:${Math.max(8,n/Math.max(score,1)*100)}%"></span></div><p class="small">${classes[name].summary}</p></div>`).join("");
+ window.resultText=`WoW Forever Class Finder result: ${winner}\n${c.role}\n${c.summary}\nStrengths: ${c.strengths}\nConsider: ${c.tradeoff}\nOther matches: ${sorted.slice(1,4).map(x=>x[0]).join(", ")}`;
+}
+$("restart").onclick=()=>{index=0;answers=Array(qs.length).fill(null);$("results").classList.add("hidden");$("quiz").classList.remove("hidden");render()};
+$("copy").onclick=async()=>{try{await navigator.clipboard.writeText(window.resultText);$("copy").textContent="Copied!";setTimeout(()=>$("copy").textContent="Copy results",1400)}catch(e){prompt("Copy your results:",window.resultText)}};
+render();
+</script></body></html>
